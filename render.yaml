@@ -2,9 +2,9 @@
 # Render will ask for every `sync: false` secret.
 #
 # Public traffic:
-#   zellr.nikhilwho.in       -> zellr-web
-#   api.zellr.nikhilwho.in   -> zellr-api
-#   *.zellr.nikhilwho.in     -> zellr-edge (the single wildcard ingress)
+#   zellr.localhost       -> zellr-web
+#   api.zellr.localhost   -> zellr-api
+#   *.zellr.localhost     -> zellr-edge (the single wildcard ingress)
 services:
   - type: web
     name: zellr-web
@@ -18,9 +18,9 @@ services:
       # Docker env vars are also build args on Render, so these values are
       # compiled into the Next.js browser bundle.
       - key: NEXT_PUBLIC_UPLOAD_API_URL
-        value: https://api.zellr.nikhilwho.in
+        value: http://localhost:4000
       - key: NEXT_PUBLIC_SITE_DOMAIN
-        value: zellr.nikhilwho.in
+        value: zellr.localhost
 
   - type: web
     name: zellr-api

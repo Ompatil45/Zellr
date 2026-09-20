@@ -10,7 +10,7 @@ export default function Deploy({ initialRepoUrl = "" }: { initialRepoUrl?: strin
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const siteDomain =
-    process.env.NEXT_PUBLIC_SITE_DOMAIN ?? "zellr.nikhilwho.in";
+    process.env.NEXT_PUBLIC_SITE_DOMAIN ?? "zellr.localhost";
   const apiUrl = process.env.NEXT_PUBLIC_UPLOAD_API_URL ?? "";
   const isLocal =
     apiUrl.includes("localhost") || apiUrl.includes("127.0.0.1");

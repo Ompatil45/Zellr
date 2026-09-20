@@ -17,7 +17,7 @@ BRPOP build-queue 0          # wait for an id (e.g. 6g3xo)
 After this, the request-handler can serve:
 
 ```
-https://6g3xo.zellr.nikhilwho.in/   →   dist/6g3xo/index.html
+http://6g3xo.zellr.localhost:3001/   →   dist/6g3xo/index.html
 ```
 
 ---

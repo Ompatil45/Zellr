@@ -2,7 +2,7 @@
 
 Accepts a GitHub repo URL, clones it, uploads source to Cloudflare R2, and enqueues a build job.
 
-In production this is exposed as **`https://api.zellr.nikhilwho.in`** (nginx → host `:4000` → container `:3000`).
+Locally this is exposed as **`http://localhost:4000`** (host `:4000` → container `:3000`).
 
 ---
 

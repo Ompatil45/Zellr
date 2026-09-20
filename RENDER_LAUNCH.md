@@ -10,25 +10,17 @@ The worker runs user repository builds. Keep this installation private until the
 
 Zellr intentionally has no application login. Before exposing the deployment form or upload API on the public internet, restrict both to your email with Cloudflare Access or an equivalent gateway.
 
-## Custom domains and wildcard DNS
+## Local-only hostname setup
 
-After all services are healthy, add these domains in Render:
+This version does not require a purchased domain or public DNS. The local hostnames are:
 
-| Render service | Domain |
+| Service | Local address |
 | --- | --- |
-| `zellr-web` | `zellr.nikhilwho.in` |
-| `zellr-api` | `api.zellr.nikhilwho.in` |
-| `zellr-edge` | `*.zellr.nikhilwho.in` |
+| Dashboard | `http://localhost:3000` |
+| Upload API | `http://localhost:4000` |
+| Deployed sites | `http://{id}.zellr.localhost:3001` |
 
-For the wildcard domain, copy the exact DNS values displayed by Render into the `nikhilwho.in` DNS zone. Render currently requires all three CNAME records:
-
-| Name | Target |
-| --- | --- |
-| `*` | the edge service's `onrender.com` hostname |
-| `_acme-challenge` | the edge service's `verify.renderdns.com` hostname |
-| `_cf-custom-hostname` | the edge service's `hostname.renderdns.com` hostname |
-
-Render also requires the root domain to point to Render for wildcard validation. Since this project uses `*.zellr.nikhilwho.in`, that means `zellr.nikhilwho.in` must be on Render (the dashboard service does this). Do not invent these targets: they are unique per Render service. If Cloudflare manages the zone, begin with DNS-only/gray-cloud records until verification completes; use Full (strict) TLS if Cloudflare remains proxied afterward.
+Do not add custom domains or wildcard DNS records when running the project locally. The `.localhost` names resolve to the current machine.
 
 ## Serving model
 
@@ -37,8 +29,8 @@ The wildcard belongs to `zellr-edge`, not to each deployed site. Zellr only serv
 ## Go-live checks
 
 1. Add the R2 secrets in Render and redeploy.
-2. Add and verify the three domains above.
-3. Deploy a known Vite repository and check `https://<id>.zellr.nikhilwho.in/`.
-4. Confirm `https://api.zellr.nikhilwho.in/health` and `https://<id>.zellr.nikhilwho.in/health` return 200.
+2. Start the local services with Docker Compose.
+3. Deploy a known Vite repository and check `http://<id>.zellr.localhost:3001/`.
+4. Confirm `http://localhost:4000/health` and `http://<id>.zellr.localhost:3001/health` return 200.
 
 The only account-specific inputs still needed are the Render workspace/project authorization, Cloudflare DNS access, and R2 credentials. They must be added in Render/Cloudflare rather than committed to this repository.

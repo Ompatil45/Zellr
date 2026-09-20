@@ -4,7 +4,7 @@
 
 **Paste a GitHub URL → get a live static site on its own subdomain.**
 
-`https://{id}.zellr.nikhilwho.in`
+`http://{id}.zellr.localhost:3001`
 
 ![Turborepo](https://img.shields.io/badge/Turborepo-EF4444?logo=turborepo&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-14+-000000?logo=next.js&logoColor=white)
@@ -35,23 +35,23 @@ The live product hostnames:
 
 | Hostname | Service |
 |----------|---------|
-| `zellr.nikhilwho.in` | Dashboard (Next.js web) |
-| `api.zellr.nikhilwho.in` | Upload API |
-| `{id}.zellr.nikhilwho.in` | Deployed site (request-handler) |
+| `localhost:3000` | Dashboard (Next.js web) |
+| `localhost:4000` | Upload API |
+| `{id}.zellr.localhost:3001` | Deployed site (request-handler) |
 
 Example: after a deploy with id `6g3xo`, the site is at:
 
 ```
-https://6g3xo.zellr.nikhilwho.in/
+http://6g3xo.zellr.localhost:3001/
 ```
 
 Locally (bypassing nginx) the same site is:
 
 ```
-http://6g3xo.zellr.nikhilwho.in:3001/
+http://6g3xo.zellr.localhost:3001/
 ```
 
-or `http://localhost:3001/` with `Host: 6g3xo.zellr.nikhilwho.in`.
+or `http://localhost:3001/` with `Host: 6g3xo.zellr.localhost`.
 
 ---
 
@@ -103,14 +103,14 @@ or `http://localhost:3001/` with `Host: 6g3xo.zellr.nikhilwho.in`.
 | `uploaded` | Source in R2, waiting for / in build |
 | `deployed` | Built assets in `dist/{id}/`, ready to serve |
 
-The landing page polls `GET /status?id={id}` every 2s until status is `deployed`, then shows `https://{id}.{NEXT_PUBLIC_SITE_DOMAIN}`.
+The landing page polls `GET /status?id={id}` every 2s until status is `deployed`, then shows `http://{id}.{NEXT_PUBLIC_SITE_DOMAIN}:3001`.
 
 ### How a subdomain request is resolved
 
-For `http://6g3xo.zellr.nikhilwho.in:3001/`:
+For `http://6g3xo.zellr.localhost:3001/`:
 
-1. **DNS / nginx** — `*.zellr.nikhilwho.in` points at the host; nginx matches the wildcard and proxies to `127.0.0.1:3001` (request-handler). Hitting `:3001` directly skips nginx but uses the same handler.
-2. **ID extraction** — `req.hostname` is `6g3xo.zellr.nikhilwho.in` → first label → `6g3xo`.
+1. **Local hostname / nginx** — `*.zellr.localhost` resolves to this machine; nginx matches the wildcard and proxies to `127.0.0.1:3001` (request-handler). Hitting `:3001` directly skips nginx but uses the same handler.
+2. **ID extraction** — `req.hostname` is `6g3xo.zellr.localhost` → first label → `6g3xo`.
 3. **Path** — `/` becomes `/index.html`.
 4. **R2 fetch** — object key `dist/6g3xo/index.html`.
 5. **MIME** — `.html` / `.css` / `.js` mapped; everything else `application/octet-stream`.
@@ -163,9 +163,9 @@ The full plan for framework detection, static and dynamic build paths, R2, Docke
 
 Nginx (`nginx/zellr.conf`) fronts production:
 
-- `zellr.nikhilwho.in` → web `:3000`
-- `api.zellr.nikhilwho.in` → upload `:4000`
-- `*.zellr.nikhilwho.in` → request-handler `:3001`
+- `zellr.localhost` → web `:3000`
+- `api.zellr.localhost` → upload `:4000`
+- `*.zellr.localhost` → request-handler `:3001`
 
 ---
 
@@ -236,7 +236,7 @@ Or skip hosts:
 curl -H "Host: fv72y.zellr.localhost" http://127.0.0.1:3001/
 ```
 
-In production, `*.zellr.nikhilwho.in` DNS + nginx on 80/443 replaces `/etc/hosts` and `:3001`.
+Locally, `*.zellr.localhost` and port `:3001` are used instead of public DNS.
 
 Useful Turbo filters:
 
@@ -256,7 +256,7 @@ Root scripts: `npm run build` · `npm run lint` · `npm run clean`
 | `POST` | `/upload` | `{ "repoUrl": "https://github.com/…" }` | upload-service |
 | `GET` | `/status?id={id}` | — | upload-service |
 
-`POST /upload` returns `{ message, id }`. After deploy, open `https://{id}.zellr.nikhilwho.in`.
+`POST /upload` returns `{ message, id }`. After deploy, open `http://{id}.zellr.localhost:3001`.
 
 ### R2 key layout
 
@@ -275,8 +275,8 @@ See [`.env.example`](./.env.example).
 |----------|---------|---------|
 | `ACCESS_KEY_ID` / `SECRET_ACCESS_KEY` / `ENDPOINT` / `R2_BUCKET_NAME` | upload, deploy, request-handler | R2 access |
 | `REDIS_URL` | upload, deploy | Queue + status |
-| `NEXT_PUBLIC_UPLOAD_API_URL` | web (build-time) | e.g. `https://api.zellr.nikhilwho.in` |
-| `NEXT_PUBLIC_SITE_DOMAIN` | web (build-time) | e.g. `zellr.nikhilwho.in` |
+| `NEXT_PUBLIC_UPLOAD_API_URL` | web (build-time) | e.g. `http://localhost:4000` |
+| `NEXT_PUBLIC_SITE_DOMAIN` | web (build-time) | e.g. `zellr.localhost` |
 
 ---
 

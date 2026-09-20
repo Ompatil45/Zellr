@@ -21,7 +21,7 @@ export default async function Subdomain(req: Request, res: Response) {
   try {
     if (req.path === "/health") return res.status(200).json({ status: "ok" });
 
-    // 6g3xo.zellr.nikhilwho.in -> 6g3xo -> R2 prefix dist/6g3xo/
+    // 6g3xo.zellr.localhost -> 6g3xo -> R2 prefix dist/6g3xo/
     const id = req.hostname.split(".")[0];
     if (!id || !/^[a-z0-9]+$/i.test(id)) return res.status(404).send("Unknown deployment host");
 

@@ -2,7 +2,7 @@
 
 Serves built static sites from R2 using **subdomain → deployment id** routing.
 
-Listens on **`:3001`**. In production, nginx proxies `*.zellr.nikhilwho.in` here.
+Listens on **`:3001`**. Locally, nginx can proxy `*.zellr.localhost` here.
 
 ---
 
@@ -11,14 +11,14 @@ Listens on **`:3001`**. In production, nginx proxies `*.zellr.nikhilwho.in` here
 Example:
 
 ```
-http://6g3xo.zellr.nikhilwho.in:3001/
+http://6g3xo.zellr.localhost:3001/
 ```
 
-(or `https://6g3xo.zellr.nikhilwho.in/` behind nginx)
+(or `http://6g3xo.zellr.localhost/` behind nginx)
 
 | Step | Detail |
 |------|--------|
-| Host | `6g3xo.zellr.nikhilwho.in` |
+| Host | `6g3xo.zellr.localhost` |
 | ID | First hostname label → `6g3xo` |
 | Path `/` | Rewritten to `/index.html` |
 | R2 key | `dist/6g3xo/index.html` |
@@ -28,7 +28,7 @@ Asset example: `/assets/app.js` → `dist/6g3xo/assets/app.js`.
 
 ```
 Browser
-  │  Host: 6g3xo.zellr.nikhilwho.in
+  │  Host: 6g3xo.zellr.localhost
   ▼
 nginx (optional)  ──proxy──▶  request-handler :3001
                                   │
@@ -90,7 +90,7 @@ docker compose up request-handler   # 127.0.0.1:3001
 ### Local curl without DNS
 
 ```bash
-curl -H "Host: 6g3xo.zellr.nikhilwho.in" http://127.0.0.1:3001/
+curl -H "Host: 6g3xo.zellr.localhost" http://127.0.0.1:3001/
 ```
 
-That hits the same code path as opening `http://6g3xo.zellr.nikhilwho.in:3001/` when DNS points at your machine.
+That hits the same code path as opening `http://6g3xo.zellr.localhost:3001/` on your machine.
