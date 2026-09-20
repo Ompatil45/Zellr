@@ -15,7 +15,7 @@
 
 </div>
 
-![Zellr landing — paste a GitHub URL and get a live subdomain](./docs/demo/landing-deploy.png)
+![Zellr landing — paste a GitHub URL and get a live subdomain]
 
 ![Quote and footer](./docs/demo/landing-footer.png)
 
