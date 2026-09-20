@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+.cache/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs & caches
+logs/
+*.log
+.eslintcache
+.npm
+
+# Deploy clones
+apps/deploy-service/output/
+apps/upload-service/output/
+apps/upload-service/src/controllers/output/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+!.vscode/extensions.json
+
+# Temp
+*.tmp
+.tmp/
+tmp/

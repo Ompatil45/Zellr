@@ -1,0 +1,65 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  upload-service:
+    build:
+      context: .
+      dockerfile: apps/upload-service/Dockerfile
+    ports:
+      - "127.0.0.1:4000:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - ACCESS_KEY_ID=${ACCESS_KEY_ID}
+      - SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
+      - ENDPOINT=${ENDPOINT}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  deploy-service:
+    build:
+      context: .
+      dockerfile: apps/deploy-service/Dockerfile
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - ACCESS_KEY_ID=${ACCESS_KEY_ID}
+      - SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
+      - ENDPOINT=${ENDPOINT}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  request-handler:
+    build:
+      context: .
+      dockerfile: apps/request-handler/Dockerfile
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      - ACCESS_KEY_ID=${ACCESS_KEY_ID}
+      - SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
+      - ENDPOINT=${ENDPOINT}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_UPLOAD_API_URL: ${NEXT_PUBLIC_UPLOAD_API_URL}
+        NEXT_PUBLIC_SITE_DOMAIN: ${NEXT_PUBLIC_SITE_DOMAIN}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - upload-service
+    restart: unless-stopped
+
+volumes:
+  redis-data:

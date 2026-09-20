@@ -1,0 +1,92 @@
+# Render Blueprint for Zellr. Import this repository as a Blueprint in Render;
+# Render will ask for every `sync: false` secret.
+#
+# Public traffic:
+#   zellr.nikhilwho.in       -> zellr-web
+#   api.zellr.nikhilwho.in   -> zellr-api
+#   *.zellr.nikhilwho.in     -> zellr-edge (the single wildcard ingress)
+services:
+  - type: web
+    name: zellr-web
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: apps/web/Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      # Docker env vars are also build args on Render, so these values are
+      # compiled into the Next.js browser bundle.
+      - key: NEXT_PUBLIC_UPLOAD_API_URL
+        value: https://api.zellr.nikhilwho.in
+      - key: NEXT_PUBLIC_SITE_DOMAIN
+        value: zellr.nikhilwho.in
+
+  - type: web
+    name: zellr-api
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: apps/upload-service/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: zellr-redis
+          property: connectionString
+      - key: ACCESS_KEY_ID
+        sync: false
+      - key: SECRET_ACCESS_KEY
+        sync: false
+      - key: ENDPOINT
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+
+  - type: worker
+    name: zellr-worker
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: apps/deploy-service/Dockerfile
+    dockerContext: .
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: zellr-redis
+          property: connectionString
+      - key: ACCESS_KEY_ID
+        sync: false
+      - key: SECRET_ACCESS_KEY
+        sync: false
+      - key: ENDPOINT
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+
+  - type: web
+    name: zellr-edge
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: apps/request-handler/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: ACCESS_KEY_ID
+        sync: false
+      - key: SECRET_ACCESS_KEY
+        sync: false
+      - key: ENDPOINT
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+
+  - type: keyvalue
+    name: zellr-redis
+    plan: starter
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
