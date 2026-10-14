@@ -223,11 +223,11 @@ If upload/deploy crash with `ECONNREFUSED 127.0.0.1:6379`, Redis is not running.
 
 ### Preview a deployed site locally
 
-After status is `deployed`, map the id to loopback (macOS has no wildcard `/etc/hosts`) and open port **3001**:
+After status is `deployed`, map the id to loopback on Windows and open port **3001**:
 
-```bash
-sudo sh -c 'echo "127.0.0.1 fv72y.zellr.localhost" >> /etc/hosts'
-open "http://fv72y.zellr.localhost:3001/"
+```powershell
+sudo powershell.exe -NoProfile -Command "if (-not (Select-String -LiteralPath '$env:SystemRoot\System32\drivers\etc\hosts' -SimpleMatch '127.0.0.1 fv72y.zellr.localhost' -Quiet)) { Add-Content -LiteralPath '$env:SystemRoot\System32\drivers\etc\hosts' -Value '127.0.0.1 fv72y.zellr.localhost' }"
+Start-Process "http://fv72y.zellr.localhost:3001/"
 ```
 
 Or skip hosts:

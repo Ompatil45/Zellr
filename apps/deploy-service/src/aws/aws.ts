@@ -118,7 +118,9 @@ export async function copyFinalDist(id: string, detection: FrameworkDetection) {
 
   const uploadPromises = allFiles.map((file) => {
     // Keep relative path inside dist
-    const relativePath = file.slice(folderPath.length + 1);
+    // R2/S3 object keys always use forward slashes, including when the
+    // deploy worker itself is running on Windows.
+    const relativePath = path.relative(folderPath, file).split(path.sep).join("/");
     return uploadFile(`dist/${id}/${relativePath}`, file);
   });
 

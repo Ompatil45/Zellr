@@ -139,7 +139,7 @@ export default function Deploy({ initialRepoUrl = "" }: { initialRepoUrl?: strin
               {isLocal && (
                 <div className="deployment-command">
                   <p>To open it in the browser, map the subdomain to this machine first:</p>
-                  <code>{`sudo sh -c 'echo "127.0.0.1 ${deploymentId}.${siteDomain}" >> /etc/hosts'`}</code>
+                  <code>{`sudo powershell.exe -NoProfile -Command "if (-not (Select-String -LiteralPath '$env:SystemRoot\\System32\\drivers\\etc\\hosts' -SimpleMatch '127.0.0.1 ${deploymentId}.${siteDomain}' -Quiet)) { Add-Content -LiteralPath '$env:SystemRoot\\System32\\drivers\\etc\\hosts' -Value '127.0.0.1 ${deploymentId}.${siteDomain}' }"`}</code>
                   <p>Then visit <span>{liveHref}</span></p>
                 </div>
               )}

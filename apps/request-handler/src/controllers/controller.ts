@@ -2,10 +2,6 @@ import "../env.js";
 import type { Request, Response } from "express";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import path from "path";
-import { pipeline } from "stream";
-import { promisify } from "util";
-
-const pipelineAsync = promisify(pipeline);
 const s3Client = new S3Client({
   region: "auto",
   credentials: { accessKeyId: process.env.ACCESS_KEY_ID!, secretAccessKey: process.env.SECRET_ACCESS_KEY! },
@@ -28,10 +24,26 @@ export default async function Subdomain(req: Request, res: Response) {
     const requestPath = req.path === "/" ? "index.html" : req.path.replace(/^\/+/, "");
     if (requestPath.split("/").some((part) => part === "..")) return res.status(400).send("Invalid path");
 
-    const object = await s3Client.send(new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME || "zellr-bucket",
-      Key: `dist/${id}/${requestPath}`,
-    }));
+    const bucket = process.env.R2_BUCKET_NAME || "zellr-bucket";
+    let object;
+    try {
+      object = await s3Client.send(new GetObjectCommand({
+        Bucket: bucket,
+        Key: `dist/${id}/${requestPath}`,
+      }));
+    } catch (error) {
+      const status = error && typeof error === "object" && "$metadata" in error
+        ? (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode
+        : undefined;
+      if (status !== 404 || !requestPath.includes("/")) throw error;
+
+      // Compatibility for deployments produced by the older Windows worker,
+      // which accidentally stored nested R2 keys with backslashes.
+      object = await s3Client.send(new GetObjectCommand({
+        Bucket: bucket,
+        Key: `dist/${id}/${requestPath.replaceAll("/", "\\")}`,
+      }));
+    }
     if (!object.Body) return res.status(404).send("File not found");
 
     const inferredType = mimeTypes[path.extname(requestPath).toLowerCase()] ?? "application/octet-stream";
@@ -43,7 +55,12 @@ export default async function Subdomain(req: Request, res: Response) {
     res.status(200);
     res.setHeader("Content-Type", contentType);
     res.setHeader("Cache-Control", requestPath.includes(".") && requestPath !== "index.html" ? "public, max-age=31536000, immutable" : "no-cache");
-    await pipelineAsync(object.Body as NodeJS.ReadableStream, res);
+    // Explicitly materialize and send the R2 object so Express always closes
+    // the response. Piping the SDK body directly can leave a chunked response
+    // open with some R2-compatible endpoints, causing browsers to wait forever.
+    const bytes = await object.Body.transformToByteArray();
+    res.setHeader("Content-Length", bytes.byteLength);
+    return res.send(Buffer.from(bytes));
   } catch (error) {
     const code = error && typeof error === "object" && "$metadata" in error ? (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode : undefined;
     if (code === 404) return res.status(404).send("File not found");
